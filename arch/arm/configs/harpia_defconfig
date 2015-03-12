@@ -284,7 +284,11 @@ CONFIG_IOSCHED_NOOP=y
 CONFIG_IOSCHED_DEADLINE=y
 CONFIG_IOSCHED_FIOPS=y
 CONFIG_IOSCHED_SIOPLUS=y
+<<<<<<< HEAD:arch/arm/configs/harpia_defconfig
 >>>>>>> 70398961109... Add Sioplus scheduler:arch/arm/configs/test-lux_defconfig
+=======
+CONFIG_IOSCHED_ZEN=y
+>>>>>>> 73f8803bc00... Add Zen scheduler:arch/arm/configs/test-lux_defconfig
 # CONFIG_DEFAULT_ROW is not set
 # CONFIG_DEFAULT_CFQ is not set
 # CONFIG_DEFAULT_BFQ is not set
@@ -297,6 +301,7 @@ CONFIG_DEFAULT_IOSCHED="noop"
 # CONFIG_DEFAULT_DEADLINE is not set
 # CONFIG_DEFAULT_FIOPS is not set
 # CONFIG_DEFAULT_SIOPLUS is not set
+# CONFIG_DEFAULT_ZEN is not set
 CONFIG_DEFAULT_IOSCHED="cfq"
 CONFIG_ASN1=y
 >>>>>>> 70398961109... Add Sioplus scheduler:arch/arm/configs/test-lux_defconfig
