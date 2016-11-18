@@ -902,15 +902,15 @@ static struct utag *load_utags(struct blkdev *cb)
 	if (UTAG_MIN_TAG_SIZE * 2 > bytes) {
 		pr_err("[%s] invalid tags size %zu\n", ctrl->dir_name, bytes);
 		if (!ctrl->hwtag)
-			goto close_fd;
+			return NULL;
 		if (init_empty(ctrl))
-			goto close_fd;
+			return NULL;
 		bytes = UTAG_MIN_TAG_SIZE * 2;
 	}
 
 	data = vmalloc(bytes);
 	if (!data)
-		goto close_fd;
+		return NULL;
 
 	ret_bytes = kernel_read(cb->filep, 0, data, bytes);
 	if (bytes != ret_bytes) {
@@ -934,8 +934,6 @@ static struct utag *load_utags(struct blkdev *cb)
 
  free_data:
 	vfree(data);
- close_fd:
-	filp_close(cb->filep, NULL);
 	return head;
 }
 
@@ -1140,7 +1138,6 @@ static int store_utags(struct ctrl *ctrl, struct utag *tags)
 			cb->name, written);
 		rc = -EIO;
 	}
-	filp_close(fp, NULL);
 
 	/* Only try to use backup partition if it is configured */
 	if (ctrl->backup.name) {
@@ -1154,7 +1151,6 @@ static int store_utags(struct ctrl *ctrl, struct utag *tags)
 		if (written < tags_size)
 			pr_err("failed to write file (%s), rc=%zu\n",
 				cb->name, written);
-		filp_close(fp, NULL);
 	}
 	vfree(datap);
 
@@ -1443,25 +1439,6 @@ static int lock_show(struct seq_file *file, void *v)
 	}
 
 	seq_printf(file, "%u\n", ctrl->lock);
-
-	memset(&htag, 0, sizeof(struct utag));
-	mutex_lock(&ctrl->access_lock);
-
-	if (open_utags(&ctrl->main))
-		return -EIO;
-
-	if (read_head(&ctrl->main, &htag)) {
-		mutex_unlock(&ctrl->access_lock);
-		filp_close(ctrl->main.filep, NULL);
-		return -EIO;
-	}
-
-
-	ctrl->lock = htag.flags & UTAG_FLAG_PROTECTED ? 1 : 0;
-	seq_printf(file, "%u\n", ctrl->lock);
-	filp_close(ctrl->main.filep, NULL);
-	mutex_unlock(&ctrl->access_lock);
-
 	return 0;
 }
 
