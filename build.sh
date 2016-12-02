@@ -44,26 +44,22 @@ fi
 echo -e "${blue}Setting up${nocol}"
 export ARCH=arm
 export SUBARCH=arm
-export CROSS_COMPILE=$(xdg-user-dir)/tools/ubertc-arm-eabi-4.9/bin/arm-eabi-
-kernelname="Test"
-kernelversion="2"
-kernelrevision="3"
+kernelname="UD_kernel"
+kernelversion="1"
+kernelrevision="0"
 echo
 echo -e "${blue}Cleaning${nocol}"
 make ${jobs} mrproper
 rm -f arch/arm/boot/dts/*.dtb
 rm -f arch/arm/boot/dt.img
-rm -fr tmp
-rm -f flash/zImage
-rm -f flash/dt.img
-rm -fr flash/modules/*
+rm -fr Flashable_ZIP
 rm -f ${kernelname}_v*.zip
 echo
 echo
 echo -e "${lightblue}Compiling ${kernelname} Kernel${nocol}"
 echo
 echo -e "${blue}Initializing defconfig${nocol}"
-make test-lux_defconfig
+make osprey_defconfig
 echo
 echo -e "${blue}Building kernel${nocol}"
 make ${jobs} zImage
@@ -76,15 +72,18 @@ echo -e "${blue}Building modules${nocol}"
 make ${jobs} modules
 echo
 echo -e "${blue}Making flashable zip${nocol}"
-mkdir -p tmp/system
-make ${jobs} modules_install INSTALL_MOD_PATH=tmp/system INSTALL_MOD_STRIP=1
-mkdir -p tmp/flash/modules/pronto
-find tmp/system/ -name '*.ko' -type f -exec cp '{}' tmp/flash/modules/ \;
-mv arch/arm/boot/zImage flash/
-mv arch/arm/boot/dt.img flash/
-cp -r tmp/flash/modules/* flash/modules/
-cd flash/
-zip -qr ../${kernelname}_v${kernelversion}_r${kernelrevision}.zip * -x .gitignore
+mkdir -p flashable/tmp
+make ${jobs} modules_install INSTALL_MOD_PATH=flashable/tmp INSTALL_MOD_STRIP=1
+mkdir -p flashable/flash
+cp -r tools/flashable/* flashable/flash/
+mkdir -p flashable/flash/system/modules
+find flashable/tmp/ -name '*.ko' -type f -exec cp '{}' flashable/flash/system/modules/ \;
+cp arch/arm/boot/zImage flashable/flash/tools/
+cp arch/arm/boot/dt.img flashable/flash/tools/
+cd flashable/flash/
+N=${kernelname}_v${kernelversion}_r${kernelrevision}
+sed -i 's/$N/'${N}'/g' META-INF/com/google/android/updater-script
+zip -qr ../../${kernelname}_v${kernelversion}_r${kernelrevision}.zip * -x .gitignore
 cd ../
 echo
 echo
