@@ -76,8 +76,8 @@ mkdir -p flashable/tmp
 make ${jobs} modules_install INSTALL_MOD_PATH=flashable/tmp INSTALL_MOD_STRIP=1
 mkdir -p flashable/flash
 cp -r tools/flashable/* flashable/flash/
-mkdir -p flashable/flash/system/modules
-find flashable/tmp/ -name '*.ko' -type f -exec cp '{}' flashable/flash/system/modules/ \;
+mkdir -p flashable/flash/system/lib/modules
+find flashable/tmp/ -name '*.ko' -type f -exec cp '{}' flashable/flash/system/lib/modules/ \;
 cp arch/arm/boot/zImage flashable/flash/tools/
 cp arch/arm/boot/dt.img flashable/flash/tools/
 cd flashable/flash/
