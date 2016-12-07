@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2015 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -124,12 +124,11 @@ limProcessDisassocFrame(tpAniSirGlobal pMac, tANI_U8 *pRxPacketInfo, tpPESession
     // Get reasonCode from Disassociation frame body
     reasonCode = sirReadU16(pBody);
 
-    limLog(pMac, LOGE,
-        FL("Received Disassoc frame for Addr: "MAC_ADDRESS_STR
-        "(mlm state=%s, sme state=%d),"
+    PELOG2(limLog(pMac, LOGE,
+        FL("Received Disassoc frame for Addr: "MAC_ADDRESS_STR"(mlm state=%s, sme state=%d),"
         "with reason code %d from "MAC_ADDRESS_STR), MAC_ADDR_ARRAY(pHdr->da),
-        limMlmStateStr(psessionEntry->limMlmState), psessionEntry->limSmeState,
-        reasonCode, MAC_ADDR_ARRAY(pHdr->sa));
+        limMlmStateStr(psessionEntry->limMlmState), psessionEntry->limSmeState, reasonCode,
+        MAC_ADDR_ARRAY(pHdr->sa));)
 
     /**
    * Extract 'associated' context for STA, if any.
@@ -216,6 +215,10 @@ limProcessDisassocFrame(tpAniSirGlobal pMac, tANI_U8 *pRxPacketInfo, tpPESession
                 (psessionEntry->limSmeState != eLIM_SME_WT_ASSOC_STATE)  &&
                 (psessionEntry->limSmeState != eLIM_SME_WT_REASSOC_STATE) ))
     {
+        PELOGE(limLog(pMac, LOGE,
+               FL("received Disassoc with reason code= %d disassoc frame rssi = "
+                "%d from "MAC_ADDRESS_STR), reasonCode,
+                (uint)abs((tANI_S8)WDA_GET_RX_RSSI_DB(pRxPacketInfo)),MAC_ADDR_ARRAY(pHdr->sa));)
         switch (reasonCode)
         {
             case eSIR_MAC_UNSPEC_FAILURE_REASON:
@@ -229,7 +232,6 @@ limProcessDisassocFrame(tpAniSirGlobal pMac, tANI_U8 *pRxPacketInfo, tpPESession
             case eSIR_MAC_RSN_IE_MISMATCH_REASON:
             case eSIR_MAC_1X_AUTH_FAILURE_REASON:
             case eSIR_MAC_PREV_AUTH_NOT_VALID_REASON:
-            case eSIR_MAC_PEER_REJECT_MECHANISIM_REASON:
                 // Valid reasonCode in received Disassociation frame
                 break;
 
@@ -253,7 +255,7 @@ limProcessDisassocFrame(tpAniSirGlobal pMac, tANI_U8 *pRxPacketInfo, tpPESession
                        FL("received Disassoc frame with invalid reasonCode "
                        "%d from "MAC_ADDRESS_STR), reasonCode,
                        MAC_ADDR_ARRAY(pHdr->sa));)
-                break;
+                return;
         }
     }
     else
@@ -270,7 +272,8 @@ limProcessDisassocFrame(tpAniSirGlobal pMac, tANI_U8 *pRxPacketInfo, tpPESession
     }
 
     if ((pStaDs->mlmStaContext.mlmState == eLIM_MLM_WT_DEL_STA_RSP_STATE) ||
-        (pStaDs->mlmStaContext.mlmState == eLIM_MLM_WT_DEL_BSS_RSP_STATE))
+        (pStaDs->mlmStaContext.mlmState == eLIM_MLM_WT_DEL_BSS_RSP_STATE) ||
+        (pStaDs->isDisassocDeauthInProgress))
     {
         /**
          * Already in the process of deleting context for the peer
@@ -300,6 +303,8 @@ limProcessDisassocFrame(tpAniSirGlobal pMac, tANI_U8 *pRxPacketInfo, tpPESession
                pStaDs->mlmStaContext.mlmState, MAC_ADDR_ARRAY(pHdr->sa));)
 
     } // if (pStaDs->mlmStaContext.mlmState != eLIM_MLM_LINK_ESTABLISHED_STATE)
+
+    pStaDs->isDisassocDeauthInProgress++;
 
     pStaDs->mlmStaContext.cleanupTrigger = eLIM_PEER_ENTITY_DISASSOC;
     pStaDs->mlmStaContext.disassocReason = (tSirMacReasonCodes) reasonCode;

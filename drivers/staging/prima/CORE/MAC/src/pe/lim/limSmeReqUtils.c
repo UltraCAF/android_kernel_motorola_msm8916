@@ -855,13 +855,6 @@ limIsSmeScanReqValid(tpAniSirGlobal pMac, tpSirSmeScanReq pScanReq)
     tANI_U8 valid = true;
     tANI_U8 i = 0;
 
-    if (pScanReq->numSsid > SIR_SCAN_MAX_NUM_SSID)
-    {
-        valid = false;
-        limLog(pMac, LOGE, FL("Number of SSIDs > SIR_SCAN_MAX_NUM_SSID"));
-        goto end;
-    }
-
     for (i = 0; i < pScanReq->numSsid; i++)
     {
         if (pScanReq->ssId[i].length > SIR_MAC_MAX_SSID_LENGTH)
@@ -872,7 +865,7 @@ limIsSmeScanReqValid(tpAniSirGlobal pMac, tpSirSmeScanReq pScanReq)
             goto end;    
         }
     }
-    if ((pScanReq->bssType < 0) || (pScanReq->bssType > eSIR_AUTO_MODE))
+    if (pScanReq->bssType > eSIR_AUTO_MODE)
     {
         limLog(pMac, LOGE, FL("Invalid BSS Type"));
         valid = false;
