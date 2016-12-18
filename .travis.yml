@@ -8,16 +8,15 @@ before_script:
   zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 
   lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache 
   libgl1-mesa-dev libxml2-utils xsltproc unzip maven schedtool &> /dev/null
-- git clone https://bitbucket.org/UBERTC/arm-eabi-6.0.git $HOME/tmp
-- mv $HOME/tmp/arm-eabi-6.0.tar.xz $HOME/uber.tar.xz
-- tar -xvf uber.tar.xz &> log
+- wget https://bitbucket.org/UBERTC/arm-eabi-6.0/get/02a40bf5461b.zip $HOME/tmp
+- mv $HOME/tmp/02a40bf5461b.zip $HOME/uber.zip
+- tar -xvf uber.zip &> log
 - export CROSS_COMPILE=$HOME/uber/bin/arm-eabi-
 script:
 - cd $HOME/
 - git clone https://github.com/Ahmed-Hady/android_kernel_motorola_msm8916 -b UD_kernel kernel_osprey &> /dev/null
 - cd kernel_osprey
 - ./build.sh
-- export kernelname="UD_kernel"
-- export kernelversion="1"
-- export kernelrevision="1"
-- curl --upload-file "./twrp-$(date +%Y%m%d)-3.0.2-UNOFFICIAL-arubaslim.zip" "https://transfer.sh/twrp-$(date +%Y%m%d)-3.0.2-UNOFFICIAL-arubaslim.zip"
+  file: './kernel_osprey/UD_kernel_v1_r1.zip'
+  on:
+    repo: Ahmed-Hady/android_kernel_motorola_msm8916
