@@ -21,6 +21,3 @@ script:
 - export kernelversion="1"
 - export kernelrevision="1"
 - curl --upload-file "./twrp-$(date +%Y%m%d)-3.0.2-UNOFFICIAL-arubaslim.zip" "https://transfer.sh/twrp-$(date +%Y%m%d)-3.0.2-UNOFFICIAL-arubaslim.zip"
-  file: './kernel_osprey/$(kernelname)_v$(kernelversion)_r$(kernelrevision).zip'
-  on:
-    repo: Ahmed-Hady/android_kernel_motorola_msm8916
