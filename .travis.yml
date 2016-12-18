@@ -1,3 +1,4 @@
+sudo: false
 language: java
 jdk:
   - openjdk7
@@ -17,6 +18,4 @@ script:
 - git clone https://github.com/Ahmed-Hady/android_kernel_motorola_msm8916 -b UD_kernel kernel_osprey &> /dev/null
 - cd kernel_osprey
 - ./build.sh
-  file: './kernel_osprey/UD_kernel_v1_r1.zip'
-  on:
-    repo: Ahmed-Hady/android_kernel_motorola_msm8916
+
