@@ -62,18 +62,18 @@ echo -e "${blue}Initializing defconfig${nocol}"
 make osprey_defconfig
 echo
 echo -e "${blue}Building kernel${nocol}"
-make ${jobs} zImage
-make ${jobs} dtbs
+make ${jobs} zImage CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_NO_ERROR_ON_MISMATCH=y
+make ${jobs} dtbs CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_NO_ERROR_ON_MISMATCH=y
 echo
 echo -e "${blue}Generating master DTB${nocol}"
 tools/dtbToolCM -o arch/arm/boot/dt.img -s 2048 -p scripts/dtc/ arch/arm/boot/dts/
 echo
 echo -e "${blue}Building modules${nocol}"
-make ${jobs} modules
+make ${jobs} modules CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_NO_ERROR_ON_MISMATCH=y
 echo
 echo -e "${blue}Making flashable zip${nocol}"
 mkdir -p flashable/tmp
-make ${jobs} modules_install INSTALL_MOD_PATH=flashable/tmp INSTALL_MOD_STRIP=1
+make ${jobs} modules_install INSTALL_MOD_PATH=flashable/tmp INSTALL_MOD_STRIP=1 CONFIG_DEBUG_SECTION_MISMATCH=y
 mkdir -p flashable/flash
 cp -r tools/flashable/* flashable/flash/
 mkdir -p flashable/flash/system/lib/modules
