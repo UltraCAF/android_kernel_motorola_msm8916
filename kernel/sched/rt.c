@@ -897,6 +897,7 @@ static int sched_rt_runtime_exceeded(struct rt_rq *rt_rq)
 			rt_rq->rt_throttled = 1;
 
 			if (!once) {
+				printk_deferred("sched: RT throttling activated\n");
 				once = true;
 				dump_throttled_rt_tasks(rt_rq);
 			}
