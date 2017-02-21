@@ -4830,7 +4830,7 @@ static void hub_events(void)
 		hub = list_entry(tmp, struct usb_hub, event_list);
 		kref_get(&hub->kref);
 		hdev = hub->hdev;
-		usb_get_dev(hdev)
+		usb_get_dev(hdev);
 
 		/* make sure hdev is not freed before accessing it */
 		if (hub->disconnected) {
