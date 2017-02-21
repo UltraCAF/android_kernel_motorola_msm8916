@@ -49,10 +49,10 @@ kernelversion="2"
 kernelrevision="5"
 echo
 echo -e "${blue}Cleaning${nocol}"
-make ${jobs} mrproper
+make -j16 ARCH=arm mrproper
 rm -f arch/arm/boot/dts/*.dtb
 rm -f arch/arm/boot/dt.img
-rm -fr Flashable_ZIP
+rm -fr flashable
 rm -f ${kernelname}_v*.zip
 echo
 echo
