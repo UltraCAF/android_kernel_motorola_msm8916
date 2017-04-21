@@ -1,20 +1,14 @@
 ui_print("$N for Moto G 2015");
 ui_print("Very Thanks to test_Kernel_motorola_msm8916-n Devs");
 
-assert(getprop("ro.product.device") == "surnia" ||
-       getprop("ro.product.device") == "surnia_umts" ||
-       getprop("ro.product.device") == "surnia_uds" ||
-       getprop("ro.product.device") == "surnia_udstv" ||
-       getprop("ro.product.device") == "osprey" ||
+assert(getprop("ro.product.device") == "osprey" ||
        getprop("ro.product.device") == "osprey_umts" ||
        getprop("ro.product.device") == "osprey_u2" ||
        getprop("ro.product.device") == "osprey_ud2" ||
        getprop("ro.product.device") == "osprey_uds" ||
        getprop("ro.product.device") == "osprey_cdma" ||
        getprop("ro.product.device") == "osprey_udstv" ||
-       getprop("ro.product.device") == "merlin" ||
-       getprop("ro.product.device") == "lux" ||
-       abort("This package is for device: surnia,osprey,merlin,lux; this device is " +
+       abort("This package is for device: osprey; this device is " +
              getprop("ro.product.device") + "."););
 
 ui_print("Extracting flashing tools...");

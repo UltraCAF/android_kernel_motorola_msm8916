@@ -45,8 +45,8 @@ echo -e "${blue}Setting up${nocol}"
 export ARCH=arm
 export SUBARCH=arm
 kernelname="UD_kernel"
-kernelversion="2"
-kernelrevision="5"
+kernelversion="3"
+kernelrevision="0"
 echo
 echo -e "${blue}Cleaning${nocol}"
 make -j16 ARCH=arm mrproper
