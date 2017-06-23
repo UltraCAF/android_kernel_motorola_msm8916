@@ -6904,7 +6904,7 @@ nla_policy
 qca_wlan_vendor_attr_policy[QCA_WLAN_VENDOR_ATTR_MAX+1] = {
     [QCA_WLAN_VENDOR_ATTR_MAC_ADDR] = {
         .type = NLA_BINARY,
-        .len = VOS_MAC_ADDR_SIZE},
+        .len = HDD_MAC_ADDR_LEN},
 };
 
 /**
