@@ -479,7 +479,6 @@ struct mdss_panel_info {
 	bool hbm_feature_enabled;
 	bool hbm_state;
 	bool blank_progress_notify_enabled;
-	bool hbm_restore;
 };
 
 struct mdss_panel_data {
