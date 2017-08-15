@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2017 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -1085,8 +1085,8 @@ sme_process_cmd:
                             {
                                csrReleaseCommand(pMac, pCommand);
                             }
+                            pMac->max_power_cmd_pending = false;
                             break;
-
 #ifdef FEATURE_OEM_DATA_SUPPORT
                         case eSmeCommandOemDataReq:
                             csrLLUnlock(&pMac->sme.smeCmdActiveList);
@@ -3071,7 +3071,25 @@ eHalStatus sme_ScanRequest(tHalHandle hHal, tANI_U8 sessionId, tCsrScanRequest *
     tpAniSirGlobal pMac = PMAC_STRUCT( hHal );
     MTRACE(vos_trace(VOS_MODULE_ID_SME,
            TRACE_CODE_SME_RX_HDD_MSG_SCAN_REQ, sessionId, pscanReq->scanType));
-    smsLog(pMac, LOG2, FL("enter"));
+
+    smsLog(pMac, LOG1,
+           FL("isCoexScoIndSet %d disable_scan_during_sco %d is_disconnected %d"),
+           pMac->isCoexScoIndSet,
+           pMac->scan.disable_scan_during_sco,
+           csrIsConnStateDisconnected(pMac, sessionId));
+
+    if (pMac->isCoexScoIndSet && pMac->scan.disable_scan_during_sco &&
+        csrIsConnStateDisconnected(pMac, sessionId)) {
+        csrScanFlushResult(pMac);
+        pMac->scan.disable_scan_during_sco_timer_info.callback = callback;
+        pMac->scan.disable_scan_during_sco_timer_info.dev = pContext;
+        pMac->scan.disable_scan_during_sco_timer_info.scan_id= *pScanRequestID;
+
+        vos_timer_start(&pMac->scan.disable_scan_during_sco_timer,
+                                                CSR_DISABLE_SCAN_DURING_SCO);
+        return eHAL_STATUS_SUCCESS;
+    }
+
     do
     {
         if(pMac->scan.fScanEnable &&
@@ -9563,6 +9581,13 @@ eHalStatus sme_SetMaxTxPower(tHalHandle hHal, tSirMacAddr bssid,
    eHalStatus status = eHAL_STATUS_SUCCESS;
    tSmeCmd *set_max_tx_pwr;
 
+   if (pMac->max_power_cmd_pending)
+   {
+      smsLog(pMac, LOG1,
+        FL("set max tx power already in progress"));
+      return eHAL_STATUS_RESOURCES;
+   }
+
    MTRACE(vos_trace(VOS_MODULE_ID_SME,
        TRACE_CODE_SME_RX_HDD_SET_MAXTXPOW, NO_SESSION, 0));
    smsLog(pMac, LOG1,
@@ -9581,11 +9606,13 @@ eHalStatus sme_SetMaxTxPower(tHalHandle hHal, tSirMacAddr bssid,
            vos_mem_copy(set_max_tx_pwr->u.set_tx_max_pwr.self_sta_mac_addr,
                  self_mac_addr, SIR_MAC_ADDR_LENGTH);
            set_max_tx_pwr->u.set_tx_max_pwr.power = db;
+           pMac->max_power_cmd_pending = true;
            status = csrQueueSmeCommand(pMac, set_max_tx_pwr, eANI_BOOLEAN_TRUE);
            if ( !HAL_STATUS_SUCCESS( status ) )
            {
                smsLog( pMac, LOGE, FL("fail to send msg status = %d"), status );
                csrReleaseCommandScan(pMac, set_max_tx_pwr);
+               pMac->max_power_cmd_pending = false;
            }
        }
        else
@@ -10274,6 +10301,16 @@ eHalStatus sme_UpdateIsFastRoamIniFeatureEnabled(tHalHandle hHal,
                      "%s: FastRoam is already enabled or disabled, nothing to do (returning) old(%d) new(%d)", __func__,
                       pMac->roam.configParam.isFastRoamIniFeatureEnabled,
                       isFastRoamIniFeatureEnabled);
+      return eHAL_STATUS_SUCCESS;
+  }
+  if (smeNeighborMiddleOfRoaming(hHal))
+  {
+      VOS_TRACE(VOS_MODULE_ID_SME, VOS_TRACE_LEVEL_INFO,
+                "%s: In middle of roaming isFastRoamIniFeatureEnabled %d",
+                __func__, isFastRoamIniFeatureEnabled);
+      if (!isFastRoamIniFeatureEnabled)
+          pMac->roam.pending_roam_disable = TRUE;
+
       return eHAL_STATUS_SUCCESS;
   }
 

@@ -2435,6 +2435,21 @@ VOS_STATUS WDA_prepareConfigTLV(v_PVOID_t pVosContext,
                             + sizeof(tHalCfg) + tlvStruct->length);
 
    wdiStartParams->usConfigBufferLen = (tANI_U8 *)tlvStruct - tlvStructStart ;
+
+   /* QWLAN_HAL_CFG_DISABLE_SCAN_DURING_SCO  */
+   tlvStruct->type = QWLAN_HAL_CFG_DISABLE_SCAN_DURING_SCO ;
+   tlvStruct->length = sizeof(tANI_U32);
+   configDataValue = (tANI_U32 *)(tlvStruct + 1);
+
+   if (wlan_cfgGetInt(pMac, WNI_CFG_DISABLE_SCAN_DURING_SCO,
+                                            configDataValue ) != eSIR_SUCCESS)
+   {
+      VOS_TRACE( VOS_MODULE_ID_WDA, VOS_TRACE_LEVEL_ERROR,
+               "Failed to get value for WNI_CFG_DISABLE_SCAN_DURING_SCO");
+      goto handle_failure;
+   }
+   tlvStruct = (tHalCfg *)( (tANI_U8 *) tlvStruct
+                           + sizeof(tHalCfg) + tlvStruct->length) ;
 #ifdef WLAN_DEBUG
    {
       int i;
@@ -8174,15 +8189,24 @@ VOS_STATUS WDA_ProcessUpdateProbeRspTemplate(tWDA_CbContext *pWDA,
                               pSendProbeRspParams->bssId, sizeof(tSirMacAddr));
    wdiSendProbeRspParam->wdiProbeRspTemplateInfo.uProbeRespTemplateLen =
                               pSendProbeRspParams->probeRespTemplateLen;
-   /* Copy the Probe Response template to local buffer */
-   vos_mem_copy(
-           wdiSendProbeRspParam->wdiProbeRspTemplateInfo.pProbeRespTemplate,
-           pSendProbeRspParams->pProbeRespTemplate, 
-           pSendProbeRspParams->probeRespTemplateLen);
    vos_mem_copy(
      wdiSendProbeRspParam->wdiProbeRspTemplateInfo.uaProxyProbeReqValidIEBmap,
      pSendProbeRspParams->ucProxyProbeReqValidIEBmap,
      WDI_PROBE_REQ_BITMAP_IE_LEN);
+   /* Copy the Probe Response template to local buffer */
+   wdiSendProbeRspParam->wdiProbeRspTemplateInfo.pProbeRespTemplate =
+      vos_mem_malloc(wdiSendProbeRspParam->wdiProbeRspTemplateInfo.
+      uProbeRespTemplateLen);
+   if(!wdiSendProbeRspParam->wdiProbeRspTemplateInfo.pProbeRespTemplate)
+   {
+      status = WDI_STATUS_MEM_FAILURE;
+      goto free_mem;
+   }
+
+   vos_mem_copy(
+           wdiSendProbeRspParam->wdiProbeRspTemplateInfo.pProbeRespTemplate,
+           pSendProbeRspParams->pProbeRespTemplate,
+           pSendProbeRspParams->probeRespTemplateLen);
    
    wdiSendProbeRspParam->wdiReqStatusCB = NULL ;
    
@@ -8192,7 +8216,10 @@ VOS_STATUS WDA_ProcessUpdateProbeRspTemplate(tWDA_CbContext *pWDA,
    {
       VOS_TRACE( VOS_MODULE_ID_WDA, VOS_TRACE_LEVEL_ERROR,
           "Failure in SEND Probe RSP Params WDI API" );
+      vos_mem_free(wdiSendProbeRspParam->wdiProbeRspTemplateInfo.
+      pProbeRespTemplate);
    }
+free_mem:
    vos_mem_free(pSendProbeRspParams);
    vos_mem_free(wdiSendProbeRspParam);
    return CONVERT_WDI2VOS_STATUS(status);
